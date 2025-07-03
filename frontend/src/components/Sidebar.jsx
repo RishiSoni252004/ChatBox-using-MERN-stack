@@ -18,19 +18,32 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchUnreadCounts = async () => {
       try {
-        const res = await fetch("/api/messages/unread-count", {
+        const res = await fetch("/api/messages/unread-counts", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
         const data = await res.json();
+        console.log("Unread counts from backend:", data); // Debug log
         setUnreadCounts(data); // [{ _id: senderId, count: 2 }]
       } catch (err) {
         console.error("Failed to fetch unread counts", err);
       }
     };
 
-    fetchUnreadCounts();
+    // Listen for new messages and message seen events to refresh unread counts
+    const socket = window.socket;
+    if (socket) {
+      socket.on("newMessage", fetchUnreadCounts);
+      socket.on("messageSeen", fetchUnreadCounts);
+    }
+
+    return () => {
+      if (socket) {
+        socket.off("newMessage", fetchUnreadCounts);
+        socket.off("messageSeen", fetchUnreadCounts);
+      }
+    };
   }, []);
 
   const filteredUsers = showOnlineOnly
@@ -62,6 +75,7 @@ const Sidebar = () => {
 
       <div className="overflow-y-auto w-full py-3">
         {filteredUsers.map((user) => {
+          // Find unread count for this user (user is sender)
           const unread = unreadCounts.find((item) => item._id === user._id);
 
           return (
@@ -84,9 +98,12 @@ const Sidebar = () => {
                   <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
                 )}
 
-                {/* 🔴 Unread badge */}
+                {/* 🔴 Unread badge with tooltip for debug */}
                 {unread?.count > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-zinc-900">
+                  <span
+                    className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-zinc-900"
+                    title={`Unread from userId: ${user._id}`}
+                  >
                     {unread.count > 9 ? "9+" : unread.count}
                   </span>
                 )}

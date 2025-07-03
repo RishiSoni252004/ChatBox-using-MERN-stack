@@ -181,3 +181,39 @@ export const sendMessageWithDocument = async (req, res) => {
   }
 };
 
+export const getUnreadMessageCounts = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    // Aggregate unread messages grouped by sender
+    const counts = await Message.aggregate([
+      { $match: { receiverId: userId, seen: false } },
+      { $group: { _id: "$senderId", count: { $sum: 1 } } },
+    ]);
+    // Format: [{ _id: senderId, count: N }, ...]
+    res.status(200).json(counts);
+  } catch (error) {
+    console.error("Error in getUnreadMessageCounts: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const createTestUnreadMessage = async (req, res) => {
+  try {
+    const { receiverId } = req.body;
+    const senderId = req.user._id;
+    if (!receiverId) {
+      return res.status(400).json({ error: "receiverId is required" });
+    }
+    const newMessage = new Message({
+      senderId,
+      receiverId,
+      text: "Test unread message",
+      seen: false,
+    });
+    await newMessage.save();
+    res.status(201).json(newMessage);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

@@ -10,6 +10,8 @@ import {
   sendMesssage,
   markMessagesAsSeen,
   sendMessageWithDocument,
+  getUnreadMessageCounts,
+  createTestUnreadMessage,
 } from "../controllers/message.controller.js";
 
 // Define __dirname for ESM
@@ -77,5 +79,7 @@ router.get("/:id", protectRoute, getMessages);
 router.post("/send/:id", protectRoute, sendMesssage);
 router.post("/mark-seen", protectRoute, markMessagesAsSeen);
 router.post("/send-document/:id", protectRoute, documentUpload.single("document"), sendMessageWithDocument);
+router.get("/unread-counts", protectRoute, getUnreadMessageCounts);
+router.post("/test-create-unread", protectRoute, createTestUnreadMessage);
 
 export default router;
