@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 5000;
 const LAN_IP = process.env.LAN_IP || "localhost";
 const _dirname = path.resolve();
 
-// ✅ CORS for LAN access and credentials (cookies)
+//  CORS for LAN access and credentials (cookies)
 app.use(cors({
   origin: [
     "http://localhost:5173",
@@ -26,35 +26,35 @@ app.use(cors({
   credentials: true,
 }));
 
-// ✅ Middleware
+//  Middleware
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 
-// ✅ Serve uploaded files
+//  Serve uploaded files
 app.use("/uploads", express.static(path.join(_dirname, "uploads")));
 
-// ✅ Attach socket server instance to every request
+// Attach socket server instance to every request
 app.use((req, res, next) => {
   req.io = server;
   next();
 });
 
-// ✅ Test route for connectivity
+//  Test route for connectivity
 app.get("/api/test", (req, res) => {
   res.json({ success: true, message: "Backend is reachable!" });
 });
 
-// ✅ Auth cookie check route
+//  Auth cookie check route
 app.get("/api/check-auth", (req, res) => {
   const token = req.cookies.token;
   res.json({ token, msg: token ? "Token received" : "No token" });
 });
 
-// ✅ Ping route (quick health check)
+//  Ping route (quick health check)
 app.get("/ping", (req, res) => res.send("pong"));
 
-// ✅ Document download route
+//  Document download route
 app.get("/download/document/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(_dirname, "uploads", filename);
@@ -79,11 +79,11 @@ app.get("/download/document/:filename", (req, res) => {
   fs.createReadStream(filePath).pipe(res);
 });
 
-// ✅ Routes
+//  Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// ✅ Serve frontend build in production
+//  Serve frontend build in production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(_dirname, "../frontend/dist")));
   app.get("*", (req, res) => {
@@ -91,8 +91,8 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// ✅ Start server on LAN
+//  Start server on LAN
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server running on http://${LAN_IP}:${PORT}`);
+  console.log(` Server running on http://${LAN_IP}:${PORT}`);
   connectDB();
 });
