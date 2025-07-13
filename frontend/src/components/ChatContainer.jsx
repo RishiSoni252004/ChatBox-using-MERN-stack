@@ -67,7 +67,7 @@ const ChatContainer = () => {
     );
   }
 
-  const BASE_URL = "http://localhost:5001";
+  const BASE_URL = "http://192.168.1.39:5001";
 
   const getFileIcon = (mimetype) => {
     switch (mimetype) {
